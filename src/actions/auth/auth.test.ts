@@ -1,17 +1,18 @@
+import { describe, Mock, vi } from 'vitest';
 import { sendLoginOTP } from './auth'; 
 
 import { SignupFormSchema } from '@/lib/schemas/forms/signupFormSchema';
 
-jest.mock('@/lib/schemas/forms/signupFormSchema', () => ({
+vi.mock('@/lib/schemas/forms/signupFormSchema', () => ({
     SignupFormSchema: {
-        safeParse: jest.fn(),
+        safeParse: vi.fn(),
     },
 }));
 
 describe('sendLoginOTP', () => {
 
     it('returns validation errors when email is empty', async () => {
-        (SignupFormSchema.safeParse as jest.Mock).mockReturnValueOnce({
+        (SignupFormSchema.safeParse as Mock).mockReturnValueOnce({
             success:false,
             error: {
                 flatten: () => ({
@@ -38,7 +39,7 @@ describe('sendLoginOTP', () => {
     });
 
     it('returns validation errors when input is invalid', async () => {
-        (SignupFormSchema.safeParse as jest.Mock).mockReturnValueOnce({
+        (SignupFormSchema.safeParse as Mock).mockReturnValueOnce({
             success:false,
             error: {
                 flatten: () => ({
@@ -65,7 +66,7 @@ describe('sendLoginOTP', () => {
     });
 
     it('sends OTP successfully with valid input', async () => {
-        (SignupFormSchema.safeParse as jest.Mock).mockReturnValue({
+        (SignupFormSchema.safeParse as Mock).mockReturnValue({
             success:true,
             data: { email: 'test@example.com' },
         });
@@ -84,7 +85,7 @@ describe('sendLoginOTP', () => {
     });
 
     it('generates a valid OTP and sets expiration time', async () => {
-        (SignupFormSchema.safeParse as jest.Mock).mockReturnValue({
+        (SignupFormSchema.safeParse as Mock).mockReturnValue({
             success:true,
             data: { email: 'test@example.com' },
         });

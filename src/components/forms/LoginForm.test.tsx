@@ -1,6 +1,6 @@
 import '@testing-library/jest-dom'
 
-import { fireEvent, prettyDOM, render, screen, waitFor } from '@testing-library/react'
+import { render, screen, waitFor, within } from '@testing-library/react'
 import LoginForm from './LoginForm'
 import { useRouter } from 'next/navigation';
 import { mockUseRouter } from '@/utils/test/router-mock';
@@ -9,29 +9,30 @@ import { mockUseToast } from '@/utils/test/useToast-mock';
 import userEvent from '@testing-library/user-event'
 import React from 'react';
 import { sendLoginOTP } from '@/actions/auth/auth';
+import { describe, expect, Mock, vi } from 'vitest'
 
 const  INPUT_EMAIL = "test@gmail.com";
 
-jest.mock('next/navigation', () => ({
-    useRouter: jest.fn(),
+vi.mock('next/navigation', () => ({
+    useRouter: vi.fn(),
 }));
 
-jest.mock('@/hooks/use-toast', () => ({
-    useToast: jest.fn(),
+vi.mock('@/hooks/use-toast', () => ({
+    useToast: vi.fn(),
 }))
 
-jest.mock('@/actions/auth/auth', () => ({
-    sendLoginOTP: jest.fn(),
+vi.mock('@/actions/auth/auth', () => ({
+    sendLoginOTP: vi.fn(),
 }));
 
 describe('Login Form', () => {
     beforeAll(() => {
-        (useRouter as jest.Mock).mockReturnValue(mockUseRouter());   
-        (useToast as jest.Mock).mockReturnValue(mockUseToast()); 
+        (useRouter as Mock).mockReturnValue(mockUseRouter());   
+        (useToast as Mock).mockReturnValue(mockUseToast()); 
     })
 
     afterEach(() => {
-        jest.clearAllMocks();
+        vi.clearAllMocks();
     });
     
     it('renders email input and send button', () => {
@@ -58,7 +59,7 @@ describe('Login Form', () => {
     it('disables button while sending OTP', async() => {
         const user = userEvent.setup();
 
-        (sendLoginOTP as jest.Mock).mockImplementation(() => {
+        (sendLoginOTP as Mock).mockImplementation(() => {
             return new Promise((resolve) => {
                 setTimeout(() => {
                     resolve({ success: true });
@@ -77,10 +78,32 @@ describe('Login Form', () => {
         expect(button).toBeDisabled();
     });
 
+    it('shows button loader while sending OTP', async() => {
+        const user = userEvent.setup();
+
+        (sendLoginOTP as Mock).mockImplementation(() => {
+            return new Promise((resolve) => {
+                setTimeout(() => {
+                    resolve({ success: true });
+                }, 1000);
+            });
+        })
+
+        render(<LoginForm />);
+
+        const emailInput = screen.getByPlaceholderText(/email/i);
+        await user.type(emailInput, INPUT_EMAIL);
+
+        const button = screen.getByRole('button'); 
+        await user.click(button);
+        
+        within(button).getByTestId('loader');
+    });
+
     it('enables button after receiving OTP', async() => {
         const user = userEvent.setup();
 
-        const mockSendLoginOTP = sendLoginOTP as jest.Mock;
+        const mockSendLoginOTP = sendLoginOTP as Mock;
 
         (mockSendLoginOTP).mockImplementation(() => {
             return new Promise((resolve) => {
@@ -111,7 +134,7 @@ describe('Login Form', () => {
     it('should show error toast', async() => {
         const user = userEvent.setup();
 
-        const mockSendLoginOTP = sendLoginOTP as jest.Mock;
+        const mockSendLoginOTP = sendLoginOTP as Mock;
 
         (mockSendLoginOTP).mockImplementation(() => {
             return new Promise((resolve) => {
@@ -122,7 +145,7 @@ describe('Login Form', () => {
         })
         
         const toast = mockUseToast();
-        (useToast as jest.Mock).mockReturnValue(toast); 
+        (useToast as Mock).mockReturnValue(toast); 
 
         render(<LoginForm />);
 
@@ -147,7 +170,7 @@ describe('Login Form', () => {
     it('should show success toast', async() => {
         const user = userEvent.setup();
 
-        const mockSendLoginOTP = sendLoginOTP as jest.Mock;
+        const mockSendLoginOTP = sendLoginOTP as Mock;
 
         (mockSendLoginOTP).mockImplementation(() => {
             return new Promise((resolve) => {
@@ -158,7 +181,7 @@ describe('Login Form', () => {
         })
 
         const toast = mockUseToast();
-        (useToast as jest.Mock).mockReturnValue(toast); 
+        (useToast as Mock).mockReturnValue(toast); 
 
         render(<LoginForm />);
 
@@ -182,7 +205,7 @@ describe('Login Form', () => {
 
     it('should redirect to /auth/login/verify/otp on success of OTP', async() => {
         const user = userEvent.setup();
-        const mockSendLoginOTP = sendLoginOTP as jest.Mock;
+        const mockSendLoginOTP = sendLoginOTP as Mock;
 
         (mockSendLoginOTP).mockImplementation(() => {
             return new Promise((resolve) => {
@@ -193,7 +216,7 @@ describe('Login Form', () => {
         })
 
         const router = mockUseRouter();
-        (useRouter as jest.Mock).mockReturnValue(router);
+        (useRouter as Mock).mockReturnValue(router);
 
         render(<LoginForm />);
 

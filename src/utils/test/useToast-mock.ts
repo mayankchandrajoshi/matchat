@@ -1,3 +1,5 @@
+import { vi } from "vitest";
+
 export const mockUseToast = () => ({
-    toast: jest.fn(),
+    toast: vi.fn(),
 });
