@@ -1,12 +1,12 @@
 "use client"
 
 import React, { ChangeEvent, FormEvent, useActionState, useEffect, useState } from 'react'
-import { Input } from '../ui/input'
-import { Button } from '../ui/button'
+import { Input } from '../../ui/input'
+import { Button } from '../../ui/button'
 import { useRouter } from 'next/navigation'
 import { useToast } from '@/hooks/use-toast'
-import { sendLoginOTP } from '@/actions/auth/auth'
-import Loader1 from '../loaders/Loader1'
+import sendLoginOTPAction from '@/actions/auth/sendLoginOTPAction'
+import Loader1 from '../../loaders/Loader1'
 
 const LoginForm = () => {
     const router = useRouter();
@@ -14,7 +14,7 @@ const LoginForm = () => {
 
     const [ email, setEmail ] = useState<string>("");
 
-    const [state, sendOTP, isSendingOTP] = useActionState(sendLoginOTP, undefined)  
+    const [state, sendOTP, isSendingOTP] = useActionState(sendLoginOTPAction, undefined)  
 
     useEffect(()=>{
         if(state?.errors){
@@ -25,6 +25,7 @@ const LoginForm = () => {
             return;
         }
         else if(state?.success){
+            localStorage.setItem("user-email", email);
             toast({
                 variant: "default",
                 description: state.message

@@ -8,7 +8,7 @@ import { useToast } from '@/hooks/use-toast'
 import { mockUseToast } from '@/utils/test/useToast-mock';
 import userEvent from '@testing-library/user-event'
 import React from 'react';
-import { sendLoginOTP } from '@/actions/auth/auth';
+import sendLoginOTPAction from '@/actions/auth/sendLoginOTPAction';
 import { describe, expect, Mock, vi } from 'vitest'
 
 const  INPUT_EMAIL = "test@gmail.com";
@@ -23,6 +23,10 @@ vi.mock('@/hooks/use-toast', () => ({
 
 vi.mock('@/actions/auth/auth', () => ({
     sendLoginOTP: vi.fn(),
+}));
+
+vi.mock('@/actions/auth/sendLoginOTPAction', () => ({
+    default: vi.fn(),
 }));
 
 describe('Login Form', () => {
@@ -59,7 +63,7 @@ describe('Login Form', () => {
     it('disables button while sending OTP', async() => {
         const user = userEvent.setup();
 
-        (sendLoginOTP as Mock).mockImplementation(() => {
+        (sendLoginOTPAction as Mock).mockImplementation(() => {
             return new Promise((resolve) => {
                 setTimeout(() => {
                     resolve({ success: true });
@@ -81,7 +85,7 @@ describe('Login Form', () => {
     it('shows button loader while sending OTP', async() => {
         const user = userEvent.setup();
 
-        (sendLoginOTP as Mock).mockImplementation(() => {
+        (sendLoginOTPAction as Mock).mockImplementation(() => {
             return new Promise((resolve) => {
                 setTimeout(() => {
                     resolve({ success: true });
@@ -103,7 +107,7 @@ describe('Login Form', () => {
     it('enables button after receiving OTP', async() => {
         const user = userEvent.setup();
 
-        const mockSendLoginOTP = sendLoginOTP as Mock;
+        const mockSendLoginOTP = sendLoginOTPAction as Mock;
 
         (mockSendLoginOTP).mockImplementation(() => {
             return new Promise((resolve) => {
@@ -122,6 +126,9 @@ describe('Login Form', () => {
         await user.click(button);
         expect(button).toBeDisabled();
         
+        const loader = screen.getByTestId("loader");
+        expect(loader).toBeInTheDocument();
+        
         await waitFor(() => {
             expect(mockSendLoginOTP).toHaveReturned();
         });
@@ -129,12 +136,14 @@ describe('Login Form', () => {
         await waitFor(() => {
             expect(button).toBeEnabled();
         });
+        
+        expect(loader).not.toBeInTheDocument();
     });
 
     it('should show error toast', async() => {
         const user = userEvent.setup();
 
-        const mockSendLoginOTP = sendLoginOTP as Mock;
+        const mockSendLoginOTP = sendLoginOTPAction as Mock;
 
         (mockSendLoginOTP).mockImplementation(() => {
             return new Promise((resolve) => {
@@ -170,7 +179,7 @@ describe('Login Form', () => {
     it('should show success toast', async() => {
         const user = userEvent.setup();
 
-        const mockSendLoginOTP = sendLoginOTP as Mock;
+        const mockSendLoginOTP = sendLoginOTPAction as Mock;
 
         (mockSendLoginOTP).mockImplementation(() => {
             return new Promise((resolve) => {
@@ -205,7 +214,7 @@ describe('Login Form', () => {
 
     it('should redirect to /auth/login/verify/otp on success of OTP', async() => {
         const user = userEvent.setup();
-        const mockSendLoginOTP = sendLoginOTP as Mock;
+        const mockSendLoginOTP = sendLoginOTPAction as Mock;
 
         (mockSendLoginOTP).mockImplementation(() => {
             return new Promise((resolve) => {

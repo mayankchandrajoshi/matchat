@@ -1,8 +1,8 @@
 'use server'
 
-import { SignupFormSchema, FormState } from '@/lib/schemas/forms/signupFormSchema'
+import { SignupFormSchema, EmailFormState } from '@/lib/schemas/forms/signupFormSchema'
 
-export async function sendLoginOTP(state: FormState, formData: FormData) {
+export default async function sendLoginOTP(state: EmailFormState, formData: FormData) {
     const validatedFields = SignupFormSchema.safeParse({
         email: formData.get('email'),
     })
@@ -19,7 +19,6 @@ export async function sendLoginOTP(state: FormState, formData: FormData) {
     const otp = Math.random().toString().slice(2, 8).toString();
     
     const expires = Date.now() + 5 * 60 * 1000; // valid for 5 minutes
-
 
     return {
         success:true,

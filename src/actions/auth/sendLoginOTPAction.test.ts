@@ -1,7 +1,9 @@
 import { describe, Mock, vi } from 'vitest';
-import { sendLoginOTP } from './auth'; 
+import sendLoginOTPAction from './sendLoginOTPAction';
 
 import { SignupFormSchema } from '@/lib/schemas/forms/signupFormSchema';
+
+const LOGIN_OTP = "123456"
 
 vi.mock('@/lib/schemas/forms/signupFormSchema', () => ({
     SignupFormSchema: {
@@ -10,7 +12,6 @@ vi.mock('@/lib/schemas/forms/signupFormSchema', () => ({
 }));
 
 describe('sendLoginOTP', () => {
-
     it('returns validation errors when email is empty', async () => {
         (SignupFormSchema.safeParse as Mock).mockReturnValueOnce({
             success:false,
@@ -24,7 +25,7 @@ describe('sendLoginOTP', () => {
         const formData = new FormData();
         formData.set('email', ''); 
 
-        const result = await sendLoginOTP({}, formData);
+        const result = await sendLoginOTPAction({}, formData);
 
         expect(result).toEqual({
             success:false,
@@ -51,7 +52,7 @@ describe('sendLoginOTP', () => {
         const formData = new FormData();
         formData.set('email', 'randomEmail'); 
 
-        const result = await sendLoginOTP({}, formData);
+        const result = await sendLoginOTPAction({}, formData);
 
         expect(result).toEqual({
             success:false,
@@ -74,7 +75,7 @@ describe('sendLoginOTP', () => {
         const formData = new FormData();
         formData.set('email', 'test@example.com');
 
-        const result = await sendLoginOTP({}, formData);
+        const result = await sendLoginOTPAction({}, formData);
 
         expect(result.success).toBe(true);
         expect(result.message).toBe('OTP Sent Successfully to test@example.com');
@@ -93,12 +94,10 @@ describe('sendLoginOTP', () => {
         const formData = new FormData();
         formData.set('email', 'test@example.com');
 
-        const result = await sendLoginOTP({}, formData);
+        const result = await sendLoginOTPAction({}, formData);
 
         expect(result.success).toBe(true);
         expect(result.message).toContain('OTP Sent Successfully to test@example.com');
-
-        const generatedOtp = Math.random().toString().slice(2, 8).toString();
 
     });
 });

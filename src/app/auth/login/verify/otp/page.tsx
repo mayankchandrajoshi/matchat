@@ -1,4 +1,4 @@
-import OTPSubmitForm from "@/components/forms/OTPSubmitForm";
+import OTPSubmitForm from "@/components/forms/auth/OTPSubmitForm";
 
 export default function OtpPage() {
 
