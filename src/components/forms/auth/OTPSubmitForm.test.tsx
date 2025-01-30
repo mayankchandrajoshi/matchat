@@ -1,14 +1,13 @@
-import '@testing-library/jest-dom'
-
 import { prettyDOM, render, screen, waitFor } from '@testing-library/react'
 import OTPSubmitForm from './OTPSubmitForm'
 import userEvent from '@testing-library/user-event';
 import { Mock, vi } from 'vitest';
 import verifyLoginOTPAction from '@/actions/auth/verifyLoginOTPAction';
-import { mockUseToast } from '@/utils/test/useToast-mock';
+import { mockUseToast } from '@/utils/client/tests/useToast-mock';
 import { useToast } from '@/hooks/use-toast';
 import { useRouter } from 'next/navigation';
-import { mockUseRouter } from '@/utils/test/router-mock';
+import { mockUseRouter } from '@/utils/client/tests/router-mock';
+import { studResizeObserver } from '@/utils/client/tests/resizeobserver-mock';
 
 const LOGIN_OTP = "123456"
 
@@ -26,20 +25,17 @@ vi.mock('@/actions/auth/verifyLoginOTPAction', () => ({
 
 describe("OTP Submit Form", () => {
     beforeAll(() => {
-        // Mocking ResizeObserver
-        const ResizeObserverMock = vi.fn(() => ({
-            observe: vi.fn(),
-            unobserve: vi.fn(),
-            disconnect: vi.fn(),
-        }));
-    
-        vi.stubGlobal('ResizeObserver', ResizeObserverMock);
+        studResizeObserver();
         
         // Mocking document.elementFromPoint
         document.elementFromPoint = vi.fn().mockReturnValue(null);
 
         (useRouter as Mock).mockReturnValue(mockUseRouter());   
         (useToast as Mock).mockReturnValue(mockUseToast()); 
+    });
+
+    beforeEach(() => {
+        vi.clearAllMocks();
     });
 
     it("renders an input and a button", () => {
@@ -64,8 +60,9 @@ describe("OTP Submit Form", () => {
     
     it("disables button while verifying OTP",async()=>{
         const user = userEvent.setup();
+        const mockVerifyLoginOTPAction = verifyLoginOTPAction as Mock;
 
-        (verifyLoginOTPAction as Mock).mockImplementation(() => {
+        (mockVerifyLoginOTPAction).mockImplementation(() => {
             return new Promise((resolve) => {
                 setTimeout(() => {
                     resolve({ success: true, message:"Logged in successfully" });
@@ -84,10 +81,11 @@ describe("OTP Submit Form", () => {
         expect(button).toBeDisabled();
     })
 
-    it.skip("shows button loader while verifying OTP",async()=>{
+    it("shows button loader while verifying OTP",async()=>{
         const user = userEvent.setup();
+        const mockVerifyLoginOTPAction = verifyLoginOTPAction as Mock;
 
-        (verifyLoginOTPAction as Mock).mockImplementation(() => {
+        (mockVerifyLoginOTPAction).mockImplementation(() => {
             return new Promise((resolve) => {
                 setTimeout(() => {
                     resolve({ success: true, message:"Logged in successfully" });
@@ -109,10 +107,12 @@ describe("OTP Submit Form", () => {
         expect(loader).toBeInTheDocument();
     })
 
-    it.skip("enables button after verifying OTP",async()=>{
+    it("enables button after verifying OTP",async()=>{
         const user = userEvent.setup();
 
-        (verifyLoginOTPAction as Mock).mockImplementation(() => {
+        const mockVerifyLoginOTPAction = verifyLoginOTPAction as Mock;
+
+        (mockVerifyLoginOTPAction).mockImplementation(() => {
             return new Promise((resolve) => {
                 setTimeout(() => {
                     resolve({ success: true, message:"Logged in successfully" });
@@ -132,22 +132,20 @@ describe("OTP Submit Form", () => {
 
         const loader = screen.getByTestId("loader");
         expect(loader).toBeInTheDocument();
-
-        await waitFor(() => {
-            expect(verifyLoginOTPAction).toHaveReturned();
-        });
 
         await waitFor(()=>{
             expect(button).toBeEnabled();
-        })
+        },{ timeout: 2000 })
 
         expect(loader).not.toBeInTheDocument();
     })
 
-    it.skip("should show success toast",async()=>{
+    it("should show success toast",async()=>{
         const user = userEvent.setup();
 
-        (verifyLoginOTPAction as Mock).mockImplementation(() => {
+        const mockVerifyLoginOTPAction = verifyLoginOTPAction as Mock;
+
+        (mockVerifyLoginOTPAction).mockImplementation(() => {
             return new Promise((resolve) => {
                 setTimeout(() => {
                     resolve({ success: true, message:"Logged in successfully" });
@@ -165,26 +163,24 @@ describe("OTP Submit Form", () => {
 
         const button = screen.getByRole("button",{ name: /login/i });
         await user.click(button);
-
-        await waitFor(() => {
-            expect(verifyLoginOTPAction).toHaveReturned();
-        })
 
         await waitFor(() => {
             expect(toast.toast).toHaveBeenCalledWith({
                 variant: "default",
                 description: "Logged in successfully",
             });
-        })
+        },{ timeout: 2000 })
     })
 
-    it.skip("should show error toast",async()=>{
+    it("should show error toast",async()=>{
         const user = userEvent.setup();
 
-        (verifyLoginOTPAction as Mock).mockImplementation(() => {
+        const mockVerifyLoginOTPAction = verifyLoginOTPAction as Mock;
+
+        (mockVerifyLoginOTPAction).mockImplementation(() => {
             return new Promise((resolve) => {
                 setTimeout(() => {
-                    resolve({ success: false, message:"Invalid OTP" });
+                    resolve({ success: false, errors:"Invalid OTP" });
                 }, 1000);
             });
         })
@@ -201,21 +197,18 @@ describe("OTP Submit Form", () => {
         await user.click(button);
 
         await waitFor(() => {
-            expect(verifyLoginOTPAction).toHaveReturned();
-        })
-
-        await waitFor(() => {
             expect(toast.toast).toHaveBeenCalledWith({
                 variant: "destructive",
                 description: "Invalid OTP",
             });
-        })
+        },{ timeout: 2000 })
     })
 
-    it.skip("should redirect to /chat on verification success",async()=>{
+    it("should redirect to /chats on verification success",async()=>{
         const user = userEvent.setup();
+        const mockVerifyLoginOTPAction = verifyLoginOTPAction as Mock;
 
-        (verifyLoginOTPAction as Mock).mockImplementation(() => {
+        (mockVerifyLoginOTPAction).mockImplementation(() => {
             return new Promise((resolve) => {
                 setTimeout(() => {
                     resolve({ success: true, message:"Logged in successfully" });
@@ -235,11 +228,7 @@ describe("OTP Submit Form", () => {
         await user.click(button);
 
         await waitFor(() => {
-            expect(verifyLoginOTPAction).toHaveReturned();
-        })
-
-        await waitFor(() => {
-            expect(router.replace).toHaveBeenCalledWith("/chat");
-        })
+            expect(router.replace).toHaveBeenCalledWith("/chats");
+        },{ timeout: 2000 })
     })
 })

@@ -7,10 +7,12 @@ import ChatOverviewCard from "@/components/chat/ChatOverviewCard";
 import RightSectionPlaceholder from "@/components/placeholders/RightSectionPlaceholder";
 
 interface ChatsPageProps {
-    searchParams: { [key: string]: string | string[] | undefined };
+    searchParams: Promise<{ [key: string]: string | string[] | undefined }>;
 }  
 
-export default function Chats({ searchParams }:ChatsPageProps) {
+export default async function Chats({ searchParams }:ChatsPageProps) {
+    const { show } = await searchParams;
+
     return (
         <div className="w-full h-full bg-inherit flex flex-row">
             <div className='w-[450px] h-full bg-inherit flex flex-col py-3'>
@@ -32,10 +34,10 @@ export default function Chats({ searchParams }:ChatsPageProps) {
                         </div>
                     </div>
                     <div className="px-4 flex flex-row gap-2 mt-3">
-                        <ToggleBtnGreen text="All" isActive={!searchParams.show || searchParams.show=="All"}/>
-                        <ToggleBtnGreen text="Unread" isActive={searchParams.show=="Unread"}/>
-                        <ToggleBtnGreen text="Favourites" isActive={searchParams.show=="Favourites"}/>
-                        <ToggleBtnGreen text="Groups" isActive={searchParams.show=="Groups"}/>
+                        <ToggleBtnGreen text="All" isActive={!show || show=="All"}/>
+                        <ToggleBtnGreen text="Unread" isActive={show=="Unread"}/>
+                        <ToggleBtnGreen text="Favourites" isActive={show=="Favourites"}/>
+                        <ToggleBtnGreen text="Groups" isActive={show=="Groups"}/>
                     </div>
                 </div>
                 <div className="scrollbar-thin scrollbar-thumb-slate-700 scrollbar-track-slate-900 min-h-0 flex-1 flex flex-col mt-3 overflow-y-scroll">

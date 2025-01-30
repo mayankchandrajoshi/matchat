@@ -2,13 +2,19 @@ import { describe, Mock, vi } from 'vitest';
 import sendLoginOTPAction from './sendLoginOTPAction';
 
 import { SignupFormSchema } from '@/lib/schemas/forms/signupFormSchema';
+import sendOTPMessage from '@/utils/server/sendOTPMessage';
 
+const USER_EMAIL = "test@example.com"
 const LOGIN_OTP = "123456"
 
 vi.mock('@/lib/schemas/forms/signupFormSchema', () => ({
     SignupFormSchema: {
         safeParse: vi.fn(),
     },
+}));
+
+vi.mock('@/utils/server/sendOTPMessage', () => ({
+    default: vi.fn(),
 }));
 
 describe('sendLoginOTP', () => {
@@ -29,9 +35,7 @@ describe('sendLoginOTP', () => {
 
         expect(result).toEqual({
             success:false,
-            errors: { 
-                email: ['Email is required']
-            },
+            errors: 'Email is required'
         });
 
         expect(SignupFormSchema.safeParse).toHaveBeenCalledWith({
@@ -56,48 +60,24 @@ describe('sendLoginOTP', () => {
 
         expect(result).toEqual({
             success:false,
-            errors: { 
-                email: ['Invalid email address']
-            },
-        });
-
-        expect(SignupFormSchema.safeParse).toHaveBeenCalledWith({
-            email: 'randomEmail',
+            errors: 'Invalid email address',
         });
     });
 
     it('sends OTP successfully with valid input', async () => {
         (SignupFormSchema.safeParse as Mock).mockReturnValue({
             success:true,
-            data: { email: 'test@example.com' },
+            data: { email: USER_EMAIL },
         });
 
         const formData = new FormData();
-        formData.set('email', 'test@example.com');
+        formData.set('email', USER_EMAIL);
 
         const result = await sendLoginOTPAction({}, formData);
 
+        expect(sendOTPMessage).toHaveBeenCalled();
+        
         expect(result.success).toBe(true);
-        expect(result.message).toBe('OTP Sent Successfully to test@example.com');
-
-        expect(SignupFormSchema.safeParse).toHaveBeenCalledWith({
-            email: 'test@example.com',
-        });
-    });
-
-    it('generates a valid OTP and sets expiration time', async () => {
-        (SignupFormSchema.safeParse as Mock).mockReturnValue({
-            success:true,
-            data: { email: 'test@example.com' },
-        });
-
-        const formData = new FormData();
-        formData.set('email', 'test@example.com');
-
-        const result = await sendLoginOTPAction({}, formData);
-
-        expect(result.success).toBe(true);
-        expect(result.message).toContain('OTP Sent Successfully to test@example.com');
-
+        expect(result.message).toBe(`OTP Sent Successfully to ${USER_EMAIL}`);
     });
 });

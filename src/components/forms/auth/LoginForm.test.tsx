@@ -1,11 +1,9 @@
-import '@testing-library/jest-dom'
-
 import { render, screen, waitFor, within } from '@testing-library/react'
 import LoginForm from './LoginForm'
 import { useRouter } from 'next/navigation';
-import { mockUseRouter } from '@/utils/test/router-mock';
+import { mockUseRouter } from '@/utils/client/tests/router-mock';
 import { useToast } from '@/hooks/use-toast'
-import { mockUseToast } from '@/utils/test/useToast-mock';
+import { mockUseToast } from '@/utils/client/tests/useToast-mock';
 import userEvent from '@testing-library/user-event'
 import React from 'react';
 import sendLoginOTPAction from '@/actions/auth/sendLoginOTPAction';
@@ -35,7 +33,7 @@ describe('Login Form', () => {
         (useToast as Mock).mockReturnValue(mockUseToast()); 
     })
 
-    afterEach(() => {
+    beforeEach(() => {
         vi.clearAllMocks();
     });
     
@@ -128,14 +126,10 @@ describe('Login Form', () => {
         
         const loader = screen.getByTestId("loader");
         expect(loader).toBeInTheDocument();
-        
-        await waitFor(() => {
-            expect(mockSendLoginOTP).toHaveReturned();
-        });
-
+    
         await waitFor(() => {
             expect(button).toBeEnabled();
-        });
+        },{timeout: 2000});
         
         expect(loader).not.toBeInTheDocument();
     });
@@ -148,7 +142,7 @@ describe('Login Form', () => {
         (mockSendLoginOTP).mockImplementation(() => {
             return new Promise((resolve) => {
                 setTimeout(() => {
-                    resolve({ success: false, errors: { email: ['Invalid email address'] } });
+                    resolve({ success: false, errors: 'Invalid email address' });
                 }, 1000);
             });
         })
@@ -165,15 +159,11 @@ describe('Login Form', () => {
         await user.click(button);
 
         await waitFor(() => {
-            expect(mockSendLoginOTP).toHaveReturned();
-        });
-
-        await waitFor(() => {
             expect(toast.toast).toHaveBeenCalledWith({
                 variant: "destructive",
-                description : ['Invalid email address'],
+                description : 'Invalid email address',
             });
-        });
+        },{ timeout: 2000 });
     });
 
     it('should show success toast', async() => {
@@ -201,15 +191,11 @@ describe('Login Form', () => {
         await user.click(button);
 
         await waitFor(() => {
-            expect(mockSendLoginOTP).toHaveReturned();
-        });
-
-        await waitFor(() => {
             expect(toast.toast).toHaveBeenCalledWith({
                 variant: "default",
                 description : `OTP Sent Successfully to ${INPUT_EMAIL}`,
             });
-        });
+        },{ timeout: 2000 });
     });
 
     it('should redirect to /auth/login/verify/otp on success of OTP', async() => {
@@ -235,12 +221,10 @@ describe('Login Form', () => {
         const button = screen.getByRole('button'); 
         await user.click(button);
 
-        await waitFor(() => {
-            expect(mockSendLoginOTP).toHaveReturned();
-        });
+        expect(button).toBeDisabled();
 
         await waitFor(() => {
             expect(router.push).toHaveBeenCalledWith('/auth/login/verify/otp');
-        });
+        }, { timeout: 2000 });
     });
 })

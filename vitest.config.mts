@@ -14,6 +14,7 @@ export default defineConfig({
             include: ['src/**/*.{ts,tsx}'],
             reportsDirectory: 'coverage', 
         },
+        setupFiles: ['./vitest.setup.ts'],
     },
     resolve: {
         alias: {

@@ -11,8 +11,6 @@ export const SignupFormSchema = z.object({
 })
 
 export type EmailFormState = {
-    errors?: {
-        email?: string[],
-    }
+    errors?: string
     message?: string
 } | undefined

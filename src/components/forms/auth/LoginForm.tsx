@@ -20,7 +20,7 @@ const LoginForm = () => {
         if(state?.errors){
             toast({
                 variant: "destructive",
-                description: state.errors.email
+                description: state.errors
             })
             return;
         }
@@ -35,7 +35,7 @@ const LoginForm = () => {
     },[state])
 
     return (
-        <form action={sendOTP} className='mt-10 flex flex-col gap-5'>
+        <form action={sendOTP} noValidate className='mt-10 flex flex-col gap-5'>
             <Input 
                 name='email'
                 type="text"
