@@ -1,9 +1,9 @@
 // @vitest-environment node
 
 import { Mock, vi } from 'vitest';
-import { createSession, verifySession, deleteSession } from '../session';
-import { mockCookieToken, mockUserId } from '../../../constants/test/auth';
-import { decrypt, encrypt } from '../encryption';
+import { createSession, verifySession, deleteSession } from './session';
+import { mockCookieToken, mockUserId } from './../../constants/test/auth';
+import { decrypt, encrypt } from './encryption';
 import { redirect } from 'next/navigation'
 
 
@@ -19,7 +19,7 @@ const mockedCookies = vi.mock('next/headers', () => ({
     cookies: vi.fn(() => mockCookies),
 }));
 
-vi.mock("../encryption", () => ({
+vi.mock("./encryption", () => ({
     encrypt: vi.fn(),
     decrypt: vi.fn(),
 }));

@@ -1,8 +1,8 @@
 // @vitest-environment node
 
 import { vi } from "vitest";
-import { mockUserId } from "../../../constants/test/auth";
-import { decrypt, encrypt } from "../encryption";
+import { mockUserId } from "../../constants/test/auth";
+import { decrypt, encrypt } from "./encryption";
 
 
 vi.mock("server-only", () => { return {}; });
